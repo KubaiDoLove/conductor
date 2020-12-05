@@ -10,13 +10,6 @@ import (
 )
 
 func (pr PlacesResource) DeletePlace(w http.ResponseWriter, r *http.Request) {
-	roomID := chi.URLParam(r, "roomID")
-	roomObjID, err := primitive.ObjectIDFromHex(roomID)
-	if err != nil {
-		_ = render.Render(w, r, httperrors.BadRequest(err))
-		return
-	}
-
 	placeID := chi.URLParam(r, "placeID")
 	placeObjID, err := primitive.ObjectIDFromHex(placeID)
 	if err != nil {
@@ -24,7 +17,7 @@ func (pr PlacesResource) DeletePlace(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := pr.repo.Delete(context.Background(), roomObjID, placeObjID); err != nil {
+	if err := pr.repo.Delete(context.Background(), placeObjID); err != nil {
 		_ = render.Render(w, r, httperrors.ResourceNotFound(err))
 		return
 	}

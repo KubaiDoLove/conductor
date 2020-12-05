@@ -10,8 +10,10 @@ var (
 )
 
 var (
-	ErrEmptyPlace        = errors.New("empty place struct")
-	ErrPlaceDoesNotExist = errors.New("place does not exist")
-	ErrPlaceTaken        = errors.New("place is already taken")
-	ErrInvalidPlace      = errors.New("invalid place")
+	ErrEmptyPlace          = errors.New("empty place struct")
+	ErrPlaceDoesNotExist   = errors.New("place does not exist")
+	ErrPlaceTaken          = errors.New("place is already taken")
+	ErrInvalidPlace        = errors.New("invalid place")
+	ErrEmptyBooking        = errors.New("empty booking struct")
+	ErrBookingTimeConflict = errors.New("booking time conflict")
 )

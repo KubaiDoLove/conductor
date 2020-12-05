@@ -11,18 +11,22 @@ type Booking struct {
 	EndTime   time.Time          `bson:"endTime" json:"endTime"`
 }
 
+type OpenCloseHours [2]int
+
 type Place struct {
-	ID       primitive.ObjectID `bson:"_id" json:"id"`
-	X        int                `bson:"x" json:"x"`
-	Y        int                `bson:"y" json:"y"`
-	Bookings []Booking          `bson:"bookings" json:"bookings"`
+	ID           primitive.ObjectID `bson:"_id" json:"id"`
+	X            int                `bson:"x" json:"x"`
+	Y            int                `bson:"y" json:"y"`
+	Bookings     []Booking          `bson:"bookings" json:"bookings"`
+	WorkingHours OpenCloseHours     `bson:"workingHours" json:"workingHours"`
 }
 
-func NewPlace(x, y int) *Place {
+func NewPlace(x, y int, workingHours OpenCloseHours) *Place {
 	return &Place{
-		X:        x,
-		Y:        y,
-		Bookings: make([]Booking, 0),
+		X:            x,
+		Y:            y,
+		WorkingHours: workingHours,
+		Bookings:     make([]Booking, 0),
 	}
 }
 

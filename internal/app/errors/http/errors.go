@@ -87,3 +87,15 @@ func BadRequest(err error) render.Renderer {
 		},
 	}
 }
+
+func Conflict(err error) render.Renderer {
+	return &Response{
+		Err:            err,
+		HTTPStatusCode: http.StatusConflict,
+		ErrorMessage: &Details{
+			AppCode:     http.StatusConflict,
+			StatusText:  http.StatusText(http.StatusConflict),
+			MessageText: err.Error(),
+		},
+	}
+}

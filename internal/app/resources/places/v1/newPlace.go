@@ -12,8 +12,9 @@ import (
 )
 
 type NewPlaceRequest struct {
-	X int `json:"x"`
-	Y int `json:"y"`
+	X            int                   `json:"x"`
+	Y            int                   `json:"y"`
+	WorkingHours models.OpenCloseHours `json:"workingHours"`
 }
 
 func (pr PlacesResource) NewPlace(w http.ResponseWriter, r *http.Request) {
@@ -30,7 +31,7 @@ func (pr PlacesResource) NewPlace(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	place := models.NewPlace(request.X, request.Y)
+	place := models.NewPlace(request.X, request.Y, request.WorkingHours)
 	if err := pr.repo.Create(context.Background(), roomObjID, place); err != nil {
 		_ = render.Render(w, r, httperrors.UnprocessableEntity(err))
 		return

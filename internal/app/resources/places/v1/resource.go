@@ -16,9 +16,13 @@ func NewPlacesResource(repo drivers.PlacesRepository) *PlacesResource {
 func (pr PlacesResource) Routes() chi.Router {
 	r := chi.NewRouter()
 
-	r.Route("/forRoom/{roomID}", func(r chi.Router) {
-		r.Post("/", pr.NewPlace)
-		r.Delete("/{placeID}", pr.DeletePlace)
+	r.Post("/forRoom/{roomID}", pr.NewPlace)
+	r.Route("/{placeID}", func(r chi.Router) {
+		r.Delete("/", pr.DeletePlace)
+
+		r.Route("/booking", func(r chi.Router) {
+			r.Post("/", pr.NewBooking)
+		})
 	})
 
 	return r
