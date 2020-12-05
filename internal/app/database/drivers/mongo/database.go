@@ -15,7 +15,7 @@ import (
 const (
 	connectionTimeout = 3 * time.Second
 	ensureIdxTimeout  = 10 * time.Second
-	CollectionRooms = "rooms"
+	CollectionRooms   = "rooms"
 )
 
 type Mongo struct {
@@ -28,7 +28,7 @@ type Mongo struct {
 	connectionTimeout time.Duration
 	ensureIdxTimeout  time.Duration
 
-	roomsRepository *RoomsRepository
+	roomsRepository  *RoomsRepository
 	placesRepository *PlacesRepository
 }
 

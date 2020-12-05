@@ -7,6 +7,7 @@ import (
 )
 
 type RoomsRepository interface {
+	All(ctx context.Context) ([]models.Room, error)
 	Create(ctx context.Context, room *models.Room) error
 	RoomByID(ctx context.Context, roomID primitive.ObjectID) (*models.Room, error)
 	Update(ctx context.Context, room *models.Room) error

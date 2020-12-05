@@ -105,7 +105,7 @@ func (p PlacesRepository) AddBooking(ctx context.Context, placeID primitive.Obje
 		return err
 	}
 
-	now := time.Now()
+	now := time.Now().Local()
 	busyPlaces := make([]models.Place, 0, len(room.Places)) // ищем уже занятые места
 	placeToUpdateIdx := -1
 	for placeIdx, place := range room.Places {
@@ -114,8 +114,8 @@ func (p PlacesRepository) AddBooking(ctx context.Context, placeID primitive.Obje
 		}
 
 		for _, b := range place.Bookings {
-			placeIsBusy := b.StartTime.Before(now) || b.StartTime.Equal(now)
-			placeWillBeBusy := b.EndTime.After(now)
+			placeIsBusy := b.StartTime.Local().Before(now) || b.StartTime.Local().Equal(now)
+			placeWillBeBusy := b.EndTime.Local().After(now)
 
 			if placeIsBusy && placeWillBeBusy { //  Если место занято и будет занято еще, то записываем в занятые места
 				busyPlaces = append(busyPlaces, place)
@@ -125,17 +125,17 @@ func (p PlacesRepository) AddBooking(ctx context.Context, placeID primitive.Obje
 	}
 
 	// Проверяем на валидность бронирования в рабочие часы
-	placeOpenHour, placeCloseHour := room.Places[placeToUpdateIdx].WorkingHours[0], room.Places[placeToUpdateIdx].WorkingHours[1]
-	bookingBeforeOpen := booking.StartTime.Hour() < placeOpenHour
-	bookingAfterClose := booking.EndTime.Hour() > placeCloseHour
-	if placeOpenHour == 0 {
+	openHour, closeHour := room.WorkingHours[0], room.WorkingHours[1]
+	bookingBeforeOpen := booking.StartTime.Local().Hour() < openHour
+	bookingAfterClose := booking.EndTime.Local().Hour() > closeHour
+	if openHour == 0 {
 		bookingBeforeOpen = false
 	}
-	if placeCloseHour == 0 {
+	if closeHour == 0 {
 		bookingAfterClose = false
 	}
 	if bookingBeforeOpen || bookingAfterClose {
-		return fmt.Errorf("place works between %d:00-%d:00", placeOpenHour, placeCloseHour)
+		return fmt.Errorf("room works between %d:00-%d:00", openHour, closeHour)
 	}
 
 	freePlaceWillBeBooked := true // Скорее всего не занятое место будет забронировано
@@ -179,8 +179,8 @@ func (p PlacesRepository) AddBooking(ctx context.Context, placeID primitive.Obje
 
 	dayBookings := make([]models.Booking, 0) // Бронирования по тому же дню
 	for _, b := range room.Places[placeToUpdateIdx].Bookings {
-		bYear, bMonth, bDay := b.StartTime.Date()
-		toBYear, toBMonth, toBDay := booking.StartTime.Date()
+		bYear, bMonth, bDay := b.StartTime.Local().Date()
+		toBYear, toBMonth, toBDay := booking.StartTime.Local().Date()
 
 		if bYear == toBYear && bMonth == toBMonth && bDay == toBDay {
 			dayBookings = append(dayBookings, b)
@@ -189,8 +189,8 @@ func (p PlacesRepository) AddBooking(ctx context.Context, placeID primitive.Obje
 
 	for _, b := range dayBookings {
 		// Если потенциальное время бронирования входит в промежуток одного из бронирований в тот же день, дропем бронь
-		endTimeConflict := booking.EndTime.Before(b.EndTime) && booking.EndTime.After(b.StartTime)
-		equalTimeConflict := booking.EndTime.Equal(b.EndTime) && booking.StartTime.Equal(b.StartTime)
+		endTimeConflict := booking.EndTime.Local().Before(b.EndTime.Local()) && booking.EndTime.Local().After(b.StartTime.Local())
+		equalTimeConflict := booking.EndTime.Local().Equal(b.EndTime.Local()) && booking.StartTime.Local().Equal(b.StartTime.Local())
 		if endTimeConflict || equalTimeConflict {
 			return drivers.ErrBookingTimeConflict
 		}

@@ -21,19 +21,17 @@ func NewBooking(start, end time.Time) *Booking {
 type OpenCloseHours [2]int
 
 type Place struct {
-	ID           primitive.ObjectID `bson:"_id" json:"id"`
-	X            int                `bson:"x" json:"x"`
-	Y            int                `bson:"y" json:"y"`
-	Bookings     []Booking          `bson:"bookings" json:"bookings"`
-	WorkingHours OpenCloseHours     `bson:"workingHours" json:"workingHours"`
+	ID       primitive.ObjectID `bson:"_id" json:"id"`
+	X        int                `bson:"x" json:"x"`
+	Y        int                `bson:"y" json:"y"`
+	Bookings []Booking          `bson:"bookings" json:"bookings"`
 }
 
-func NewPlace(x, y int, workingHours OpenCloseHours) *Place {
+func NewPlace(x, y int) *Place {
 	return &Place{
-		X:            x,
-		Y:            y,
-		WorkingHours: workingHours,
-		Bookings:     make([]Booking, 0),
+		X:        x,
+		Y:        y,
+		Bookings: make([]Booking, 0),
 	}
 }
 
@@ -47,9 +45,10 @@ type Room struct {
 	Places            []Place            `bson:"places" json:"places"`
 	MaxLandingPercent uint8              `bson:"maxLandingPercent" json:"maxLandingPercent"`
 	SocialDistance    uint               `bson:"socialDistance" json:"socialDistance"`
+	WorkingHours      OpenCloseHours     `bson:"workingHours" json:"workingHours"`
 }
 
-func NewRoom(name string, size RoomSize, maxLandPercent uint8, socialDistance uint) *Room {
+func NewRoom(name string, size RoomSize, maxLandPercent uint8, socialDistance uint, workingHours OpenCloseHours) *Room {
 	if maxLandPercent > 100 {
 		maxLandPercent = 100
 	}
@@ -60,5 +59,6 @@ func NewRoom(name string, size RoomSize, maxLandPercent uint8, socialDistance ui
 		Places:            make([]Place, 0),
 		MaxLandingPercent: maxLandPercent,
 		SocialDistance:    socialDistance,
+		WorkingHours:      workingHours,
 	}
 }

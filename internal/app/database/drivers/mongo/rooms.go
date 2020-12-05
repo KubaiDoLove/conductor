@@ -13,6 +13,22 @@ type RoomsRepository struct {
 	collection *mongo.Collection
 }
 
+func (r RoomsRepository) All(ctx context.Context) ([]models.Room, error) {
+	rooms := make([]models.Room, 0)
+
+	cur, err := r.collection.Find(ctx, bson.D{})
+	if err != nil {
+		return nil, err
+	}
+	defer cur.Close(ctx)
+
+	if err := cur.All(ctx, &rooms); err != nil {
+		return nil, err
+	}
+
+	return rooms, nil
+}
+
 func (r RoomsRepository) Create(ctx context.Context, room *models.Room) error {
 	if room == nil {
 		return drivers.ErrEmptyRoom
@@ -55,6 +71,7 @@ func (r RoomsRepository) Update(ctx context.Context, room *models.Room) error {
 				{Key: "name", Value: room.Name},
 				{Key: "maxLandingPercent", Value: room.MaxLandingPercent},
 				{Key: "socialDistance", Value: room.SocialDistance},
+				{Key: "workingHours", Value: room.WorkingHours},
 			},
 		},
 	}

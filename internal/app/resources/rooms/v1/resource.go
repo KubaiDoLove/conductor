@@ -17,6 +17,7 @@ func (rr RoomsResource) Routes() chi.Router {
 	r := chi.NewRouter()
 
 	r.Post("/new", rr.NewRoom)
+	r.Get("/", rr.All)
 	r.Put("/", rr.UpdateRoom)
 	r.Route("/{id}", func(r chi.Router) {
 		r.Get("/", rr.RoomByID)

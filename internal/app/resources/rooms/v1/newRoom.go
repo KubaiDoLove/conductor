@@ -10,10 +10,11 @@ import (
 )
 
 type NewRoomRequest struct {
-	Name              string          `json:"name"`
-	Size              models.RoomSize `json:"roomSize"`
-	MaxLandingPercent *uint8          `json:"maxLandingPercent"`
-	SocialDistance    *uint           `json:"socialDistance"`
+	Name              string                `json:"name"`
+	Size              models.RoomSize       `json:"roomSize"`
+	MaxLandingPercent *uint8                `json:"maxLandingPercent"`
+	SocialDistance    *uint                 `json:"socialDistance"`
+	WorkingHours      models.OpenCloseHours `json:"workingHours"`
 }
 
 func (rr RoomsResource) NewRoom(w http.ResponseWriter, r *http.Request) {
@@ -33,7 +34,7 @@ func (rr RoomsResource) NewRoom(w http.ResponseWriter, r *http.Request) {
 		request.SocialDistance = &zeroSocialDistance
 	}
 
-	room := models.NewRoom(request.Name, request.Size, *request.MaxLandingPercent, *request.SocialDistance)
+	room := models.NewRoom(request.Name, request.Size, *request.MaxLandingPercent, *request.SocialDistance, request.WorkingHours)
 	if err := rr.repo.Create(context.Background(), room); err != nil {
 		_ = render.Render(w, r, httperrors.UnprocessableEntity(err))
 		return
