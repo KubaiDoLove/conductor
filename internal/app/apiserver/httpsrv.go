@@ -2,6 +2,7 @@ package apiserver
 
 import (
 	"context"
+	placesV1 "github.com/KubaiDoLove/conductor/internal/app/resources/places/v1"
 	roomsV1 "github.com/KubaiDoLove/conductor/internal/app/resources/rooms/v1"
 	"log"
 	"net/http"
@@ -74,6 +75,7 @@ func (srv *HTTPServer) setupRouter() chi.Router {
 	// монтируем дополнительные ресурсы
 	r.Mount("/version", resources.VersionResource{Version: srv.version}.Routes())
 	r.Mount("/api/v1/rooms", roomsV1.NewRoomsResource(srv.ds.Rooms()).Routes())
+	r.Mount("/api/v1/places", placesV1.NewPlacesResource(srv.ds.Places()).Routes())
 
 	return r
 }

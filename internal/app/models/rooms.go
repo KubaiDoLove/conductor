@@ -18,6 +18,15 @@ type Place struct {
 	Bookings []Booking          `bson:"bookings" json:"bookings"`
 }
 
+func NewPlace(x, y int) *Place {
+	return &Place{
+		X:        x,
+		Y:        y,
+		Bookings: make([]Booking, 0),
+	}
+}
+
+// Размер - условные X и Y, только ширина и длина
 type RoomSize [2]int
 
 type Room struct {

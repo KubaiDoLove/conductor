@@ -60,7 +60,20 @@ func (p PlacesRepository) Create(ctx context.Context, roomID primitive.ObjectID,
 func (p PlacesRepository) Delete(ctx context.Context, roomID primitive.ObjectID, placeID primitive.ObjectID) error {
 	filter := bson.D{{Key: "_id", Value: roomID}}
 	update := bson.D{
-		{Key: "$pull", Value: bson.D{{Key: "places._id", Value: placeID}}},
+		{
+			Key: "$pull",
+			Value: bson.D{
+				{
+					Key: "places",
+					Value: bson.D{
+						{
+							Key:   "_id",
+							Value: placeID,
+						},
+					},
+				},
+			},
+		},
 	}
 
 	result, err := p.collection.UpdateOne(ctx, filter, update)
@@ -75,7 +88,7 @@ func (p PlacesRepository) Delete(ctx context.Context, roomID primitive.ObjectID,
 	return nil
 }
 
-func (p PlacesRepository) ToBook(ctx context.Context, placeID primitive.ObjectID, booking *models.Booking) error {
+func (p PlacesRepository) AddBooking(ctx context.Context, placeID primitive.ObjectID, booking *models.Booking) error {
 	return nil
 }
 
