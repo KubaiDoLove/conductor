@@ -28,7 +28,6 @@ func (vr VersionResource) Routes() chi.Router {
 	return r
 }
 
-// ByLogin возвращает структуру с описанием версии.
 func (vr VersionResource) Get(w http.ResponseWriter, r *http.Request) {
 	render.JSON(w, r, VersionResponse{
 		API:     APIVersion,

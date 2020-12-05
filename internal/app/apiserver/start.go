@@ -41,7 +41,10 @@ func Start(version string) {
 	defer ds.Close(context.Background())
 
 	serverApp := NewHTTPServer(appCtx, opts, ds, version)
-	serverApp.Run()
+	if err := serverApp.Run(); err != nil {
+		log.Println(err)
+		return
+	}
 
 	log.Printf("[INFO] process terminated")
 }

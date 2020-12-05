@@ -30,7 +30,7 @@ func (r RoomsRepository) RoomByID(ctx context.Context, roomID primitive.ObjectID
 	filter := bson.D{{"_id", roomID}}
 
 	room := new(models.Room)
-	err := r.collection.FindOne(ctx, filter, nil).Decode(room)
+	err := r.collection.FindOne(ctx, filter).Decode(room)
 
 	switch err {
 	case nil:
@@ -75,4 +75,3 @@ func (r RoomsRepository) Delete(ctx context.Context, roomID primitive.ObjectID) 
 	_, err := r.collection.DeleteOne(ctx, bson.D{{Key: "_id", Value: roomID}})
 	return err
 }
-
