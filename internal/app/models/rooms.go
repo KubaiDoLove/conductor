@@ -28,3 +28,17 @@ type Room struct {
 	MaxLandingPercent uint8              `bson:"maxLandingPercent" json:"maxLandingPercent"`
 	SocialDistance    uint               `bson:"socialDistance" json:"socialDistance"`
 }
+
+func NewRoom(name string, size RoomSize, maxLandPercent uint8, socialDistance uint) *Room {
+	if maxLandPercent > 100 {
+		maxLandPercent = 100
+	}
+
+	return &Room{
+		Name:              name,
+		Size:              size,
+		Places:            make([]Place, 0),
+		MaxLandingPercent: maxLandPercent,
+		SocialDistance:    socialDistance,
+	}
+}
