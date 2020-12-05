@@ -11,6 +11,13 @@ type Booking struct {
 	EndTime   time.Time          `bson:"endTime" json:"endTime"`
 }
 
+func NewBooking(start, end time.Time) *Booking {
+	return &Booking{
+		StartTime: start,
+		EndTime:   end,
+	}
+}
+
 type OpenCloseHours [2]int
 
 type Place struct {

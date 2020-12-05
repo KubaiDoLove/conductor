@@ -17,5 +17,5 @@ type PlacesRepository interface {
 	Create(ctx context.Context, roomID primitive.ObjectID, place *models.Place) error
 	Delete(ctx context.Context, placeID primitive.ObjectID) error
 	AddBooking(ctx context.Context, placeID primitive.ObjectID, booking *models.Booking) error
-	CancelBooking(ctx context.Context, placeID primitive.ObjectID, bookingID primitive.ObjectID) error
+	CancelBooking(ctx context.Context, bookingID primitive.ObjectID) error
 }

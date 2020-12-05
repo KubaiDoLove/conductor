@@ -189,8 +189,9 @@ func (p PlacesRepository) AddBooking(ctx context.Context, placeID primitive.Obje
 
 	for _, b := range dayBookings {
 		// Если потенциальное время бронирования входит в промежуток одного из бронирований в тот же день, дропем бронь
-		timeConflict := booking.EndTime.Before(b.EndTime) && booking.EndTime.After(b.StartTime)
-		if timeConflict {
+		endTimeConflict := booking.EndTime.Before(b.EndTime) && booking.EndTime.After(b.StartTime)
+		equalTimeConflict := booking.EndTime.Equal(b.EndTime) && booking.StartTime.Equal(b.StartTime)
+		if endTimeConflict || equalTimeConflict {
 			return drivers.ErrBookingTimeConflict
 		}
 	}
@@ -218,6 +219,33 @@ func (p PlacesRepository) AddBooking(ctx context.Context, placeID primitive.Obje
 	return nil
 }
 
-func (p PlacesRepository) CancelBooking(ctx context.Context, placeID primitive.ObjectID, bookingID primitive.ObjectID) error {
+func (p PlacesRepository) CancelBooking(ctx context.Context, bookingID primitive.ObjectID) error {
+	filter := bson.D{{Key: "places.bookings._id", Value: bookingID}}
+	update := bson.D{
+		{
+			Key: "$pull",
+			Value: bson.D{
+				{
+					Key: "places.$[].bookings",
+					Value: bson.D{
+						{
+							Key:   "_id",
+							Value: bookingID,
+						},
+					},
+				},
+			},
+		},
+	}
+
+	result, err := p.collection.UpdateOne(ctx, filter, update)
+	if err != nil {
+		return err
+	}
+
+	if result.ModifiedCount == 0 {
+		return drivers.ErrBookingDoesNotExist
+	}
+
 	return nil
 }

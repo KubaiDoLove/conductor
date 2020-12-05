@@ -16,4 +16,5 @@ var (
 	ErrInvalidPlace        = errors.New("invalid place")
 	ErrEmptyBooking        = errors.New("empty booking struct")
 	ErrBookingTimeConflict = errors.New("booking time conflict")
+	ErrBookingDoesNotExist = errors.New("booking does not exist")
 )
