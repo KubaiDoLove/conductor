@@ -1,4 +1,4 @@
-#Tele2/Altel Digital Hackaton
+# Tele2/Altel Digital Hackaton
 
 Приложение предназначается для бронирования: 
 
