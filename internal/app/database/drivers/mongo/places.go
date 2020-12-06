@@ -153,28 +153,26 @@ func (p PlacesRepository) AddBooking(ctx context.Context, placeID primitive.Obje
 			// Если кол-во занятых мест + 1 превышает максимально разрешенный, то дропаем бронь
 			return fmt.Errorf("it is impossible to book more rooms, max landing percent is %d", room.MaxLandingPercent)
 		}
+	}
 
-		isNotAllowedBySocialDistance := false // Предполагаем, что нам разрешено забронировать новое место по правилу соц.дистанции
+	isNotAllowedBySocialDistance := false // Предполагаем, что нам разрешено забронировать новое место по правилу соц.дистанции
+	if room.SocialDistance > 0 {          // Если нужно разделять по соц.дистанции
+		for idx, p := range busyPlaces {
+			if idx == placeToUpdateIdx { // Это наше же место, проверять на расстояние не надо
+				continue
+			}
 
-		if room.SocialDistance > 0 { // Если нужно разделять по соц.дистанции
-			for idx, p := range room.Places {
-				if idx == placeToUpdateIdx { // Это наше же место, проверять на расстояние не надо
-					continue
-				}
-
-				// Разницы координат по модулю
-				conflictByX := math.AbsInt(p.X-room.Places[placeToUpdateIdx].X) < int(room.SocialDistance)
-				conflictByY := math.AbsInt(p.Y-room.Places[placeToUpdateIdx].Y) < int(room.SocialDistance)
-				if conflictByX && conflictByY {
-					isNotAllowedBySocialDistance = true
-					break
-				}
+			// Разницы координат по модулю
+			conflictByX := math.AbsInt(p.X-room.Places[placeToUpdateIdx].X) <= int(room.SocialDistance)
+			conflictByY := math.AbsInt(p.Y-room.Places[placeToUpdateIdx].Y) <= int(room.SocialDistance)
+			if conflictByX && conflictByY {
+				isNotAllowedBySocialDistance = true
+				break
 			}
 		}
-
-		if isNotAllowedBySocialDistance {
-			return fmt.Errorf("cannot book this place: minimal social distance is %d", room.SocialDistance)
-		}
+	}
+	if isNotAllowedBySocialDistance {
+		return fmt.Errorf("cannot book this place: minimal social distance is %d", room.SocialDistance)
 	}
 
 	dayBookings := make([]models.Booking, 0) // Бронирования по тому же дню
@@ -189,9 +187,10 @@ func (p PlacesRepository) AddBooking(ctx context.Context, placeID primitive.Obje
 
 	for _, b := range dayBookings {
 		// Если потенциальное время бронирования входит в промежуток одного из бронирований в тот же день, дропем бронь
+		startTimeConflict := booking.StartTime.Local().Before(b.EndTime.Local()) && booking.StartTime.Local().After(b.StartTime.Local())
 		endTimeConflict := booking.EndTime.Local().Before(b.EndTime.Local()) && booking.EndTime.Local().After(b.StartTime.Local())
-		equalTimeConflict := booking.EndTime.Local().Equal(b.EndTime.Local()) && booking.StartTime.Local().Equal(b.StartTime.Local())
-		if endTimeConflict || equalTimeConflict {
+		equalTimeConflict := booking.EndTime.Local().Equal(b.EndTime.Local()) || booking.StartTime.Local().Equal(b.StartTime.Local())
+		if startTimeConflict || endTimeConflict || equalTimeConflict {
 			return drivers.ErrBookingTimeConflict
 		}
 	}
@@ -248,4 +247,55 @@ func (p PlacesRepository) CancelBooking(ctx context.Context, bookingID primitive
 	}
 
 	return nil
+}
+
+func (p PlacesRepository) Suggestions(ctx context.Context, placeID primitive.ObjectID) ([]models.OpenCloseHours, error) {
+	filter := bson.D{{Key: "places._id", Value: placeID}} // Ищем комнату по placeID
+	room := new(models.Room)
+	if err := p.collection.FindOne(ctx, filter).Decode(room); err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, drivers.ErrPlaceDoesNotExist
+		}
+		return nil, err
+	}
+
+	now := time.Now().Local()
+	earliestHour := now.Hour()
+	latestHour := room.WorkingHours[1]
+	if room.WorkingHours[0] > earliestHour || room.WorkingHours[0] == 0 {
+		earliestHour = room.WorkingHours[0]
+	}
+
+	currentPlace := new(models.Place)
+	for _, place := range room.Places {
+		if place.ID.Hex() == placeID.Hex() {
+			currentPlace = &place
+			break
+		}
+	}
+
+	skipHours := make([]models.OpenCloseHours, 0)
+	for _, booking := range currentPlace.Bookings {
+		for hour := booking.StartTime.Local().Hour(); hour < booking.EndTime.Local().Hour(); hour++ {
+			skipHours = append(skipHours, models.OpenCloseHours{hour, hour + 1})
+		}
+	}
+
+	freeTime := make([]models.OpenCloseHours, 0)
+	for hour := earliestHour; hour < latestHour; hour++ {
+		shouldAddTime := true
+
+		for _, hoursPair := range skipHours {
+			if hour == hoursPair[0] && hour+1 == hoursPair[1] {
+				shouldAddTime = false
+				break
+			}
+		}
+
+		if shouldAddTime {
+			freeTime = append(freeTime, models.OpenCloseHours{hour, hour + 1})
+		}
+	}
+
+	return freeTime, nil
 }

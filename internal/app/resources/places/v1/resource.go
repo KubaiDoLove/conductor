@@ -17,7 +17,11 @@ func (pr PlacesResource) Routes() chi.Router {
 	r := chi.NewRouter()
 
 	r.Post("/forRoom/{roomID}", pr.NewPlace)
-	r.Delete("/{placeID}", pr.DeletePlace)
+
+	r.Route("/{placeID}", func(r chi.Router) {
+		r.Delete("/", pr.DeletePlace)
+		r.Get("/suggestions", pr.Suggestions)
+	})
 
 	r.Route("/booking", func(r chi.Router) {
 		r.Post("/new", pr.NewBooking)

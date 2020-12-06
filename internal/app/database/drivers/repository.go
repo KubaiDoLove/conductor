@@ -19,4 +19,5 @@ type PlacesRepository interface {
 	Delete(ctx context.Context, placeID primitive.ObjectID) error
 	AddBooking(ctx context.Context, placeID primitive.ObjectID, booking *models.Booking) error
 	CancelBooking(ctx context.Context, bookingID primitive.ObjectID) error
+	Suggestions(ctx context.Context, placeID primitive.ObjectID) ([]models.OpenCloseHours, error)
 }
